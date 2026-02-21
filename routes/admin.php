@@ -40,9 +40,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('vendors/{vendor}/suspend',[VendorController::class, 'suspend'])->name('vendors.suspend');  
 
     // Coupons Management
-    Route::resource('coupons', CouponController::class)->only(['index', 'show', 'update']);
+    Route::post('coupons/{coupon}/duplicate', [CouponController::class, 'duplicate'])->name('coupons.duplicate');
+    Route::resource('coupons', CouponController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
-    // Reports Management
+    // Reports Managemen    t
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
