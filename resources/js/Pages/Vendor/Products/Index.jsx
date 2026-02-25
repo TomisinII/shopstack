@@ -1,20 +1,41 @@
 import { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import AdminLayout from '@/Layouts/AdminLayout';
-import { StatusBadge, StockBadge, PrimaryButton, SelectInput, ConfirmModal } from '@/Components';
+import VendorLayout from '@/Layouts/VendorLayout';
+import { PrimaryButton, SelectInput, ConfirmModal } from '@/Components';
 
 const formatCurrency = (amount) =>
     new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(amount);
 
-export default function Index({ products, filters, categories }) {
-    const { flash } = usePage().props;
-    const [search, setSearch] = useState(filters.search ?? '');
+function ProductStatusBadge({ status, stockStatus }) {
+    if (stockStatus === 'out_of_stock') {
+        return (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 ring-1 ring-red-600/20">
+                Out of Stock
+            </span>
+        );
+    }
+    const map = {
+        published: 'bg-green-50 text-green-700 ring-green-600/20',
+        draft:     'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+        archived:  'bg-gray-100 text-gray-600 ring-gray-500/20',
+    };
+    const labels = { published: 'Published', draft: 'Draft', archived: 'Archived' };
+    return (
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ${map[status] ?? map.draft}`}>
+            {labels[status] ?? status}
+        </span>
+    );
+}
+
+export default function Index({ products, filters }) {
+    const { flash }                       = usePage().props;
+    const [search, setSearch]             = useState(filters.search ?? '');
     const [deleteTarget, setDeleteTarget] = useState(null);
-    const [deleting, setDeleting] = useState(false);
+    const [deleting, setDeleting]         = useState(false);
 
     const applyFilter = (key, value) => {
         router.get(
-            route('admin.products.index'),
+            route('vendor.products.index'),
             { ...filters, [key]: value || undefined, page: undefined },
             { preserveState: true, replace: true }
         );
@@ -28,23 +49,20 @@ export default function Index({ products, filters, categories }) {
     const confirmDelete = () => {
         if (!deleteTarget) return;
         setDeleting(true);
-        router.delete(route('admin.products.destroy', deleteTarget.id), {
-            onFinish: () => {
-                setDeleting(false);
-                setDeleteTarget(null);
-            },
+        router.delete(route('vendor.products.destroy', deleteTarget.id), {
+            onFinish: () => { setDeleting(false); setDeleteTarget(null); },
         });
     };
 
     return (
-        <AdminLayout>
-            <Head title="Products" />
+        <VendorLayout>
+            <Head title="My Products" />
 
             <div className="space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-                    <PrimaryButton onClick={() => router.visit(route('admin.products.create'))}>
+                    <h1 className="text-2xl font-bold text-gray-900">My Products</h1>
+                    <PrimaryButton onClick={() => router.visit(route('vendor.products.create'))}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
@@ -71,7 +89,7 @@ export default function Index({ products, filters, categories }) {
                     </div>
                 )}
 
-                {/* Filters */}
+                {/* Filters bar */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
                     <div className="flex flex-col sm:flex-row gap-3">
                         <form onSubmit={handleSearch} className="flex-1">
@@ -95,17 +113,9 @@ export default function Index({ products, filters, categories }) {
                             placeholder="All Statuses"
                             options={[
                                 { value: 'published', label: 'Published' },
-                                { value: 'draft',     label: 'Draft'      },
-                                { value: 'archived',  label: 'Archived'   },
+                                { value: 'draft',     label: 'Draft'     },
+                                { value: 'archived',  label: 'Archived'  },
                             ]}
-                            className="sm:w-44"
-                        />
-
-                        <SelectInput
-                            value={filters.category ?? ''}
-                            onChange={(e) => applyFilter('category', e.target.value)}
-                            placeholder="All Categories"
-                            options={categories.map((c) => ({ value: c.id, label: c.name }))}
                             className="sm:w-44"
                         />
                     </div>
@@ -117,7 +127,7 @@ export default function Index({ products, filters, categories }) {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-gray-100 bg-gray-50/50">
-                                    {['Product', 'Category', 'Price', 'Stock', 'Status', 'Actions'].map((h, i) => (
+                                    {['Product', 'Price', 'Stock', 'Sales', 'Status', 'Actions'].map((h, i) => (
                                         <th
                                             key={h}
                                             className={`px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider ${i === 5 ? 'text-right' : 'text-left'}`}
@@ -131,6 +141,7 @@ export default function Index({ products, filters, categories }) {
                                 {products.data.length > 0 ? (
                                     products.data.map((product) => (
                                         <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
+
                                             {/* Product */}
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
@@ -152,24 +163,15 @@ export default function Index({ products, filters, categories }) {
                                                 </div>
                                             </td>
 
-                                            {/* Category */}
-                                            <td className="px-6 py-4">
-                                                {product.category ? (
-                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
-                                                        {product.category.name}
-                                                    </span>
-                                                ) : <span className="text-xs text-gray-400">—</span>}
-                                            </td>
-
                                             {/* Price */}
                                             <td className="px-6 py-4">
                                                 <div className="flex items-baseline gap-1.5">
-                                                    <span className="text-sm font-semibold text-gray-900">
-                                                        {formatCurrency(product.sale_price ?? product.price)}
+                                                    <span className="text-sm font-semibold text-gray-900 tabular-nums">
+                                                        {formatCurrency(product.on_sale ? product.price : product.original_price ?? product.price)}
                                                     </span>
-                                                    {product.sale_price && (
-                                                        <span className="text-xs text-gray-400 line-through">
-                                                            {formatCurrency(product.price)}
+                                                    {product.on_sale && (
+                                                        <span className="text-xs text-gray-400 line-through tabular-nums">
+                                                            {formatCurrency(product.original_price)}
                                                         </span>
                                                     )}
                                                 </div>
@@ -177,28 +179,43 @@ export default function Index({ products, filters, categories }) {
 
                                             {/* Stock */}
                                             <td className="px-6 py-4">
-                                                <StockBadge
-                                                    quantity={product.stock_quantity}
-                                                    status={product.stock_status}
-                                                    mode="inline"
-                                                />
+                                                <span className={`text-sm tabular-nums font-medium ${
+                                                    product.stock_quantity === 0  ? 'text-red-600'
+                                                    : product.stock_quantity <= 10 ? 'text-amber-600'
+                                                    : 'text-gray-700'
+                                                }`}>
+                                                    {product.stock_quantity} in stock
+                                                </span>
+                                            </td>
+
+                                            {/* Sales */}
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm text-gray-700 tabular-nums">{product.total_sales}</span>
                                             </td>
 
                                             {/* Status */}
                                             <td className="px-6 py-4">
-                                                <StatusBadge status={product.status} />
+                                                <ProductStatusBadge status={product.status} stockStatus={product.stock_status} />
                                             </td>
 
                                             {/* Actions */}
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-end gap-1.5">
-                                                    <Link href={route('admin.products.show', product.id)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors" title="View">
+                                                    <Link
+                                                        href={route('vendor.products.show', product.id)}
+                                                        className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
+                                                        title="View"
+                                                    >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                         </svg>
                                                     </Link>
-                                                    <Link href={route('admin.products.edit', product.id)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors" title="Edit">
+                                                    <Link
+                                                        href={route('vendor.products.edit', product.id)}
+                                                        className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
+                                                        title="Edit"
+                                                    >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                         </svg>
@@ -225,7 +242,7 @@ export default function Index({ products, filters, categories }) {
                                                 </svg>
                                                 <p className="text-sm font-medium text-gray-500">No products found</p>
                                                 <p className="text-xs text-gray-400">Try adjusting your search or filters</p>
-                                                <Link href={route('admin.products.create')} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                                                <Link href={route('vendor.products.create')} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
                                                     Add your first product →
                                                 </Link>
                                             </div>
@@ -236,7 +253,6 @@ export default function Index({ products, filters, categories }) {
                         </table>
                     </div>
 
-                    {/* Pagination */}
                     {products.last_page > 1 && (
                         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
                             <p className="text-sm text-gray-500">
@@ -250,7 +266,7 @@ export default function Index({ products, filters, categories }) {
                                         preserveState
                                         className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
                                             link.active ? 'bg-primary-600 text-white font-medium'
-                                            : link.url ? 'text-gray-600 hover:bg-gray-100'
+                                            : link.url  ? 'text-gray-600 hover:bg-gray-100'
                                             : 'text-gray-300 cursor-not-allowed'
                                         }`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
@@ -262,20 +278,15 @@ export default function Index({ products, filters, categories }) {
                 </div>
             </div>
 
-            {/* Delete confirmation modal */}
             <ConfirmModal
                 isOpen={!!deleteTarget}
                 onClose={() => setDeleteTarget(null)}
                 onConfirm={confirmDelete}
                 loading={deleting}
                 title="Delete Product"
-                message={
-                    deleteTarget
-                        ? `Are you sure you want to delete "${deleteTarget.name}"? This action cannot be undone.`
-                        : ''
-                }
+                message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? This action cannot be undone.` : ''}
                 confirmText="Delete Product"
             />
-        </AdminLayout>
+        </VendorLayout>
     );
 }

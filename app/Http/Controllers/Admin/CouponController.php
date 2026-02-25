@@ -22,16 +22,15 @@ class CouponController extends Controller
                 $q->where('type', $request->type)
             )
             ->when($request->filled('status'), function ($q) use ($request) {
-                $request->status === 'active'
-                    ? $q->active()
-                    : $q->where(function ($q) {
-                        $q->where('is_active', false)
-                          ->orWhere('valid_until', '<', now())
-                          ->orWhereRaw('usage_limit IS NOT NULL AND used_count >= usage_limit');
-                    });
+                match ($request->status) {
+                    'active'   => $q->active(),
+                    'expired'  => $q->expired(),
+                    'inactive' => $q->inactive(),
+                    default    => null,
+                };
             })
             ->latest()
-            ->paginate(20)
+            ->paginate(15)
             ->withQueryString();
 
         return Inertia::render('Admin/Coupons/Index', [
@@ -83,7 +82,7 @@ class CouponController extends Controller
     public function duplicate(Coupon $coupon): RedirectResponse
     {
         $new = $coupon->replicate();
-        $new->code       = strtoupper(Str::random(8));
+        $new->code = strtoupper(Str::random(8));
         $new->used_count = 0;
         $new->save();
 
@@ -103,42 +102,40 @@ class CouponController extends Controller
 
     private function formatCoupon(Coupon $c): array
     {
-        $expired = $c->valid_until && now()->gt($c->valid_until);
-        $maxedOut = $c->usage_limit && $c->used_count >= $c->usage_limit;
-
         return [
-            'id'                    => $c->id,
-            'code'                  => $c->code,
-            'type'                  => $c->type,
-            'value'                 => (float) $c->value,
-            'minimum_order_amount'  => $c->minimum_order_amount ? (float) $c->minimum_order_amount : null,
-            'maximum_discount'      => $c->maximum_discount ? (float) $c->maximum_discount : null,
-            'usage_limit'           => $c->usage_limit,
-            'usage_limit_per_user'  => $c->usage_limit_per_user,
-            'used_count'            => $c->used_count,
-            'valid_from'            => $c->valid_from?->format('Y-m-d'),
-            'valid_until'           => $c->valid_until?->format('Y-m-d'),
-            'valid_until_display'   => $c->valid_until?->format('d/m/Y'),
-            'is_active'             => $c->is_active,
-            'applies_to'            => $c->applies_to,
-            'excludes'              => $c->excludes,
-            'status'                => ! $c->is_active ? 'inactive' : ($expired || $maxedOut ? 'expired' : 'active'),
+            'id'                   => $c->id,
+            'code'                 => $c->code,
+            'type'                 => $c->type,
+            'value'                => (float) $c->value,
+            'minimum_order_amount' => $c->minimum_order_amount ? (float) $c->minimum_order_amount : null,
+            'maximum_discount'     => $c->maximum_discount ? (float) $c->maximum_discount : null,
+            'usage_limit'          => $c->usage_limit,
+            'usage_limit_per_user' => $c->usage_limit_per_user,
+            'used_count'           => $c->used_count,
+            'valid_from'           => $c->valid_from?->format('Y-m-d'),
+            'valid_until'          => $c->valid_until?->format('Y-m-d'),
+            'valid_until_display'  => $c->valid_until?->format('d/m/Y'),
+            'is_active'            => $c->is_active,
+            'applies_to'           => $c->applies_to,
+            'excludes'             => $c->excludes,
+            // Delegate to the model accessor — single source of truth
+            'status'               => $c->status,
         ];
     }
 
     private function validateCoupon(Request $request, ?Coupon $coupon = null): array
     {
         return $request->validate([
-            'code'                   => 'required|string|max:50|unique:coupons,code' . ($coupon ? ",{$coupon->id}" : ''),
-            'type'                   => 'required|in:percentage,fixed,free_shipping',
-            'value'                  => 'required|numeric|min:0',
-            'minimum_order_amount'   => 'nullable|numeric|min:0',
-            'maximum_discount'       => 'nullable|numeric|min:0',
-            'usage_limit'            => 'nullable|integer|min:1',
-            'usage_limit_per_user'   => 'nullable|integer|min:1',
-            'valid_from'             => 'nullable|date',
-            'valid_until'            => 'nullable|date|after_or_equal:valid_from',
-            'is_active'              => 'boolean',
+            'code'                 => 'required|string|max:50|unique:coupons,code' . ($coupon ? ",{$coupon->id}" : ''),
+            'type'                 => 'required|in:percentage,fixed,free_shipping',
+            'value'                => 'required|numeric|min:0',
+            'minimum_order_amount' => 'nullable|numeric|min:0',
+            'maximum_discount'     => 'nullable|numeric|min:0',
+            'usage_limit'          => 'nullable|integer|min:1',
+            'usage_limit_per_user' => 'nullable|integer|min:1',
+            'valid_from'           => 'nullable|date',
+            'valid_until'          => 'nullable|date|after_or_equal:valid_from',
+            'is_active'            => 'boolean',
         ]);
     }
 }

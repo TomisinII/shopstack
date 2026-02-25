@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { PrimaryButton, StatusBadge, ConfirmModal, SelectInput } from '@/Components';
 
@@ -36,6 +36,7 @@ function formatValue(coupon) {
 export default function CouponsIndex({ coupons, filters }) {
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const {flash} = usePage().props;
 
     const applyFilters = (key, value) => {
         router.get(route('admin.coupons.index'), 
@@ -76,6 +77,27 @@ export default function CouponsIndex({ coupons, filters }) {
                 </Link>
             </div>
 
+            {/* Flash Messages */}
+            {flash?.success && (
+                <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {flash.success}
+                </div>
+            )}
+
+            {flash?.error && (
+                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {flash.error}
+                </div>
+            )}
+
+
+
             {/* ── Card ── */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
 
@@ -114,6 +136,7 @@ export default function CouponsIndex({ coupons, filters }) {
                             { value: '', label: 'All Statuses' },
                             { value: 'active', label: 'Active' },
                             { value: 'expired', label: 'Expired' },
+                            { value: 'inactive', label: 'Inactive' },
                         ]}
                     />
                 </div>

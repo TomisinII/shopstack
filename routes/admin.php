@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -43,9 +45,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('coupons/{coupon}/duplicate', [CouponController::class, 'duplicate'])->name('coupons.duplicate');
     Route::resource('coupons', CouponController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
-    // Reports Managemen    t
-    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
+    // Reports Management
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
+        Route::get('/products', [ReportController::class, 'products'])->name('products');
+        Route::get('/customers', [ReportController::class, 'customers'])->name('customers');
+        Route::get('/vendors', [ReportController::class, 'vendors'])->name('vendors');
+        Route::get('/tax', [ReportController::class, 'tax'])->name('tax');
+        Route::get('/coupons', [ReportController::class, 'coupons'])->name('coupons');
+    });
 
-    // Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::get('settings',  [SettingsController::class, 'index'])->name('settings.index');
+    Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
 });
