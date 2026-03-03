@@ -40,7 +40,7 @@ export default function Login({ status, canResetPassword }) {
 
                 {/* ── Right panel ── */}
                 <div className="flex-1 flex items-center justify-center bg-white px-6 py-12">
-                    <div className="w-full max-w-sm">
+                    <div className="w-full max-w-lg">
 
                         {/* Logo + heading */}
                         <div className="text-center mb-8">

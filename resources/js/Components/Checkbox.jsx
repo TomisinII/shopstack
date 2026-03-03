@@ -2,9 +2,9 @@ export default function Checkbox({ id, label, description, checked, onChange, di
     return (
         <label
             htmlFor={id}
-            className={`flex items-start gap-3 cursor-pointer group ${disabled ? 'opacity-60 cursor-not-allowed' : ''} ${className}`}
+            className={`flex items-center gap-2 cursor-pointer group ${disabled ? 'opacity-60 cursor-not-allowed' : ''} ${className}`}
         >
-            <div className="relative flex-shrink-0 mt-0.5">
+            <div className="relative flex-shrink-0">
                 <input
                     type="checkbox"
                     id={id}
@@ -26,7 +26,7 @@ export default function Checkbox({ id, label, description, checked, onChange, di
                         </p>
                     )}
                     {description && (
-                        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+                        <p className={`text-xs text-gray-500 ${description ? 'mt-0.5' : ''}`}>{description}</p>
                     )}
                 </div>
             )}

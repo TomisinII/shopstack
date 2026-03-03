@@ -426,7 +426,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name'       => 'Scanfrost 7kg Top Load Washing Machine',
-                'category'   => 'furniture',
+                'category'   => 'electronics',
                 'brand'      => 'Scanfrost',
                 'short_desc' => '7kg capacity, multiple wash programs, energy-saving motor.',
                 'description'=> '<h2>Scanfrost 7kg Washing Machine</h2><p>Get your laundry done efficiently with the Scanfrost top-load washer. Multiple wash programs handle everything from delicates to heavy-duty loads, while the energy-saving motor keeps electricity bills low.</p>',

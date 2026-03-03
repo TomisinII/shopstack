@@ -16,6 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('phone')->nullable();
+            $table->string('stripe_customer_id')->nullable();
+            $table->string('default_payment_method_id')->nullable();
+            $table->json('notification_preferences')->nullable();
+            $table->json('preferences')->nullable();
             $table->string('avatar')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

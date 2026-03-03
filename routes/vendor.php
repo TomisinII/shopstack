@@ -7,7 +7,7 @@ use App\Http\Controllers\Vendor\EarningsController;
 use App\Http\Controllers\Vendor\SettingsController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'vendor'])->prefix('vendor')->name('vendor.')->group(function () {
+Route::middleware(['auth', 'vendor', 'verified'])->prefix('vendor')->name('vendor.')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

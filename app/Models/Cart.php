@@ -68,7 +68,7 @@ class Cart extends Model
         // Check if item already exists
         $existingItem = $this->items()
             ->where('product_id', $product->id)
-            ->where('product_variant_id', $variant?->id)
+            ->where('variant_id', $variant?->id)
             ->first();
 
         if ($existingItem) {
@@ -79,7 +79,7 @@ class Cart extends Model
         // Create new cart item
         return $this->items()->create([
             'product_id' => $product->id,
-            'product_variant_id' => $variant?->id,
+            'variant_id' => $variant?->id,
             'quantity' => $quantity,
             'price' => $product->getCurrentPrice(),
         ]);

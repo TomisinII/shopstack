@@ -20,6 +20,8 @@ return new class extends Migration
             $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'])->default('pending');
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
             $table->string('payment_method', 50); // stripe, paystack, cod
+            $table->string('payment_intent_id')->nullable();
+            $table->string('payment_reference')->nullable();
             
             // Pricing
             $table->decimal('subtotal', 12, 2);
@@ -39,6 +41,7 @@ return new class extends Migration
             $table->string('shipping_state', 100);
             $table->string('shipping_zip', 20);
             $table->string('shipping_country', 100);
+            $table->string('shipping_method', 50)->nullable();
             
             // Billing Address
             $table->string('billing_full_name')->nullable();

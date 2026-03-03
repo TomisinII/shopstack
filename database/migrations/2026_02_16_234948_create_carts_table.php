@@ -14,12 +14,11 @@ return new class extends Migration
         // Carts table
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->string('session_id')->nullable(); // for guest carts
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('session_id')->nullable()->index();
             $table->timestamps();
 
             $table->index('user_id');
-            $table->index('session_id');
         });
 
         // Cart items table
@@ -27,9 +26,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('cart_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_variant_id')->nullable()->constrained()->onDelete('cascade');
-            $table->integer('quantity')->default(1);
-            $table->decimal('price', 10, 2); // snapshot of price at time of adding
+            $table->foreignId('variant_id')->nullable()->constrained('product_variants')->nullOnDelete();
+            $table->unsignedInteger('quantity')->default(1);
+            $table->decimal('price', 12, 2);
             $table->timestamps();
 
             $table->index('cart_id');

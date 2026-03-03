@@ -18,6 +18,8 @@ class Order extends Model
         'status',
         'payment_status',
         'payment_method',
+        'payment_intent_id',   // ← added
+        'payment_reference',   // ← added
         'subtotal',
         'shipping_cost',
         'tax_amount',
@@ -34,6 +36,7 @@ class Order extends Model
         'shipping_state',
         'shipping_zip',
         'shipping_country',
+        'shipping_method',     // ← added
         // Billing address
         'billing_full_name',
         'billing_phone',
@@ -51,54 +54,39 @@ class Order extends Model
     ];
 
     protected $casts = [
-        'subtotal' => 'decimal:2',
-        'shipping_cost' => 'decimal:2',
-        'tax_amount' => 'decimal:2',
+        'subtotal'        => 'decimal:2',
+        'shipping_cost'   => 'decimal:2',
+        'tax_amount'      => 'decimal:2',
         'discount_amount' => 'decimal:2',
-        'total' => 'decimal:2',
-        'shipped_at' => 'datetime',
-        'delivered_at' => 'datetime',
+        'total'           => 'decimal:2',
+        'shipped_at'      => 'datetime',
+        'delivered_at'    => 'datetime',
     ];
 
     // =====================================================
     // RELATIONSHIPS
     // =====================================================
 
-    /**
-     * Customer who placed the order (Many-to-One)
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Order Items (One-to-Many)
-     */
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    /**
-     * Reviews for this order (One-to-Many)
-     */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
 
-    /**
-     * Coupon usages (One-to-Many)
-     */
     public function couponUsages(): HasMany
     {
         return $this->hasMany(CouponUsage::class);
     }
 
-    /**
-     * Transactions (One-to-Many)
-     */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
@@ -108,49 +96,31 @@ class Order extends Model
     // SCOPES
     // =====================================================
 
-    /**
-     * Scope: Pending orders
-     */
     public function scopePending(Builder $query): Builder
     {
         return $query->where('status', 'pending');
     }
 
-    /**
-     * Scope: Processing orders
-     */
     public function scopeProcessing(Builder $query): Builder
     {
         return $query->where('status', 'processing');
     }
 
-    /**
-     * Scope: Shipped orders
-     */
     public function scopeShipped(Builder $query): Builder
     {
         return $query->where('status', 'shipped');
     }
 
-    /**
-     * Scope: Delivered orders
-     */
     public function scopeDelivered(Builder $query): Builder
     {
         return $query->where('status', 'delivered');
     }
 
-    /**
-     * Scope: Paid orders
-     */
     public function scopePaid(Builder $query): Builder
     {
         return $query->where('payment_status', 'paid');
     }
 
-    /**
-     * Scope: Recent orders (last 30 days)
-     */
     public function scopeRecent(Builder $query): Builder
     {
         return $query->where('created_at', '>=', now()->subDays(30));
@@ -160,12 +130,9 @@ class Order extends Model
     // HELPER METHODS
     // =====================================================
 
-    /**
-     * Generate unique order number
-     */
     public static function generateOrderNumber(): string
     {
-        $year = now()->year;
+        $year      = now()->year;
         $lastOrder = self::whereYear('created_at', $year)
                          ->orderBy('id', 'desc')
                          ->first();
@@ -175,26 +142,17 @@ class Order extends Model
         return sprintf('ORD-%d-%04d', $year, $nextNumber);
     }
 
-    /**
-     * Check if order can be cancelled
-     */
     public function canBeCancelled(): bool
     {
         return in_array($this->status, ['pending', 'processing']);
     }
 
-    /**
-     * Check if order can be refunded
-     */
     public function canBeRefunded(): bool
     {
-        return $this->payment_status === 'paid' 
+        return $this->payment_status === 'paid'
                && in_array($this->status, ['processing', 'shipped', 'delivered']);
     }
 
-    /**
-     * Get full shipping address as string
-     */
     public function getShippingAddressAttribute(): string
     {
         $parts = array_filter([
@@ -209,79 +167,60 @@ class Order extends Model
         return implode(', ', $parts);
     }
 
-    /**
-     * Get order status badge color
-     */
     public function getStatusColorAttribute(): string
     {
-        return match($this->status) {
-            'pending' => 'yellow',
+        return match ($this->status) {
+            'pending'    => 'yellow',
             'processing' => 'blue',
-            'shipped' => 'indigo',
-            'delivered' => 'green',
-            'cancelled' => 'red',
-            'refunded' => 'gray',
-            default => 'gray',
+            'shipped'    => 'indigo',
+            'delivered'  => 'green',
+            'cancelled'  => 'red',
+            'refunded'   => 'gray',
+            default      => 'gray',
         };
     }
 
-    /**
-     * Get payment status badge color
-     */
     public function getPaymentStatusColorAttribute(): string
     {
-        return match($this->payment_status) {
-            'paid' => 'green',
-            'pending' => 'yellow',
-            'failed' => 'red',
+        return match ($this->payment_status) {
+            'paid'     => 'green',
+            'pending'  => 'yellow',
+            'failed'   => 'red',
             'refunded' => 'gray',
-            default => 'gray',
+            default    => 'gray',
         };
     }
 
-    /**
-     * Mark order as paid
-     */
     public function markAsPaid(): void
     {
         $this->update([
             'payment_status' => 'paid',
-            'status' => 'processing',
+            'status'         => 'processing',
         ]);
     }
 
-    /**
-     * Mark order as shipped
-     */
-    public function markAsShipped(string $trackingNumber = null): void
+    public function markAsShipped(?string $trackingNumber = null): void
     {
         $this->update([
-            'status' => 'shipped',
+            'status'          => 'shipped',
             'tracking_number' => $trackingNumber,
-            'shipped_at' => now(),
+            'shipped_at'      => now(),
         ]);
     }
 
-    /**
-     * Mark order as delivered
-     */
     public function markAsDelivered(): void
     {
         $this->update([
-            'status' => 'delivered',
+            'status'       => 'delivered',
             'delivered_at' => now(),
         ]);
     }
 
-    /**
-     * Cancel order
-     */
     public function cancel(): void
     {
         if ($this->canBeCancelled()) {
             $this->update(['status' => 'cancelled']);
-            
-            // Return stock to inventory
+
             foreach ($this->items as $item) {
                 if ($item->product && $item->product->track_inventory) {
                     $item->product->increment('stock_quantity', $item->quantity);

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -295,9 +296,20 @@ class Product extends Model
      */
     public function getPrimaryImageUrl(): ?string
     {
-        $primaryImage = $this->images()->where('is_primary', true)->first();
-        return $primaryImage?->image_path 
-               ?? $this->images()->first()?->image_path 
-               ?? null;
+        $images = $this->relationLoaded('images')
+            ? $this->images
+            : $this->images()->get();
+
+        $image = $images->firstWhere('is_primary', true) ?? $images->first();
+
+        if (!$image || !$image->url) {
+            return null;
+        }
+
+        if (str_starts_with($image->url, 'http')) {
+            return $image->url;
+        }
+
+        return Storage::url($image->url);
     }
 }
