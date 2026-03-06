@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import {StarRating} from '@/Components';
+import { StarRating } from '@/Components';
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
@@ -43,15 +43,18 @@ function RelatedProductCard({ product }) {
 // ─── Show Page ────────────────────────────────────────────────────────────────
 
 export default function Show({ product, related }) {
-    const [activeImage, setActiveImage]       = useState(0);
+    const { auth } = usePage().props;
+
+    const [activeImage, setActiveImage]           = useState(0);
     const [selectedVariants, setSelectedVariants] = useState({});
-    const [quantity, setQuantity]             = useState(1);
-    const [activeTab, setActiveTab]           = useState('description');
-    const [wishlisted, setWishlisted]         = useState(false);
-    const [addingToCart, setAddingToCart]     = useState(false);
+    const [quantity, setQuantity]                 = useState(1);
+    const [activeTab, setActiveTab]               = useState('description');
+    const [wishlisted, setWishlisted]             = useState(
+        product.is_wishlisted ?? auth?.wishlist_ids?.includes(product.id) ?? false
+    );
+    const [addingToCart, setAddingToCart]         = useState(false);
 
     const currentPrice = (() => {
-        // If a variant is selected that has a custom price, use it
         const variantIds = Object.values(selectedVariants);
         if (variantIds.length > 0) {
             const matched = product.variants.find(v => variantIds.includes(v.id));
@@ -79,6 +82,8 @@ export default function Show({ product, related }) {
 
     const inStock = product.stock_status === 'in_stock' ||
         (product.stock_status === 'in_stock' && (!product.track_inventory || product.stock_quantity > 0));
+
+    const isCustomerOrGuest = !auth?.user || auth?.roles?.includes('Customer');
 
     const tabs = [
         { id: 'description',    label: 'Description' },
@@ -247,7 +252,6 @@ export default function Show({ product, related }) {
                                 <div className="flex flex-wrap gap-2">
                                     {values.map((v) => {
                                         const isSelected = selectedVariants[type] === v.variant_id;
-                                        // Detect if value looks like a color
                                         const isColor = /^#|^rgb|^(black|white|red|blue|green|gray|silver|gold|brown|pink|purple|orange|navy|beige|yellow)$/i.test(v.value);
 
                                         if (isColor) {
@@ -276,67 +280,74 @@ export default function Show({ product, related }) {
                         ))}
 
                         {/* Quantity */}
-                        <div>
-                            <p className="text-sm font-semibold text-gray-900 mb-2.5">Quantity</p>
-                            <div className="flex items-center gap-0 border-2 border-gray-200 rounded-xl w-fit overflow-hidden">
-                                <button
-                                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                                    disabled={quantity <= 1}
-                                    className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
-                                >
-                                    −
-                                </button>
-                                <span className="w-12 h-11 flex items-center justify-center text-sm font-bold text-gray-900 border-x-2 border-gray-200">
-                                    {quantity}
-                                </span>
-                                <button
-                                    onClick={() => setQuantity(q => q + 1)}
-                                    className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors text-lg font-medium"
-                                >
-                                    +
-                                </button>
+                        { isCustomerOrGuest && (
+                            <div>
+                                <p className="text-sm font-semibold text-gray-900 mb-2.5">Quantity</p>
+                                <div className="flex items-center gap-0 border-2 border-gray-200 rounded-xl w-fit overflow-hidden">
+                                    <button
+                                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                        disabled={quantity <= 1}
+                                        className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+                                    >
+                                        −
+                                    </button>
+                                    <span className="w-12 h-11 flex items-center justify-center text-sm font-bold text-gray-900 border-x-2 border-gray-200">
+                                        {quantity}
+                                    </span>
+                                    <button
+                                        onClick={() => setQuantity(q => q + 1)}
+                                        className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors text-lg font-medium"
+                                    >
+                                        +
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* CTA Row */}
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={addToCart}
-                                disabled={!inStock || addingToCart}
-                                className="flex-1 flex items-center justify-center gap-2.5 py-3.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm shadow-lg shadow-primary-900/20"
-                            >
-                                {addingToCart ? (
-                                    <svg className="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                    </svg>
-                                ) : (
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                    </svg>
-                                )}
-                                {addingToCart ? 'Adding...' : 'Add to Cart'}
-                            </button>
+                        {isCustomerOrGuest && (
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={addToCart}
+                                    disabled={!inStock || addingToCart}
+                                    className="flex-1 flex items-center justify-center gap-2.5 py-3.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm shadow-lg shadow-primary-900/20"
+                                >
+                                    {addingToCart ? (
+                                        <svg className="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                        </svg>
+                                    )}
+                                    {addingToCart ? 'Adding...' : 'Add to Cart'}
+                                </button>
 
-                            {/* Wishlist */}
-                            <button onClick={toggleWishlist}
-                                className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all ${wishlisted ? 'border-red-300 bg-red-50 text-red-500' : 'border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-600'}`}
-                                aria-label="Add to wishlist">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill={wishlisted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                            </button>
+                                {/* Wishlist */}
+                                <button
+                                    onClick={toggleWishlist}
+                                    className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all ${wishlisted ? 'border-red-300 bg-red-50 text-red-500' : 'border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-600'}`}
+                                    aria-label="Add to wishlist"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill={wishlisted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                </button>
 
-                            {/* Share */}
-                            <button
-                                onClick={() => navigator.share?.({ title: product.name, url: window.location.href })}
-                                className="w-12 h-12 rounded-xl border-2 border-gray-200 text-gray-400 flex items-center justify-center hover:border-gray-300 hover:text-gray-600 transition-all"
-                                aria-label="Share">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                                </svg>
-                            </button>
-                        </div>
+                                {/* Share */}
+                                <button
+                                    onClick={() => navigator.share?.({ title: product.name, url: window.location.href })}
+                                    className="w-12 h-12 rounded-xl border-2 border-gray-200 text-gray-400 flex items-center justify-center hover:border-gray-300 hover:text-gray-600 transition-all"
+                                    aria-label="Share"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
 
                         {/* Trust badges */}
                         <div className="grid grid-cols-3 gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
@@ -391,7 +402,7 @@ export default function Show({ product, related }) {
                         </div>
                     )}
 
-                    {/* Specifications — placeholder for future structured data */}
+                    {/* Specifications */}
                     {activeTab === 'specifications' && (
                         <div className="max-w-2xl">
                             <p className="text-sm text-gray-400">Specifications will be listed here.</p>

@@ -20,7 +20,7 @@ class SettingSeeder extends Seeder
 
 
             ['key' => 'payment_stripe_enabled', 'value' => '1', 'group' => 'payment'],
-            ['key' => 'payment_paypal_enabled',  'value' => '1', 'group' => 'payment'],
+            ['key' => 'payment_paystack_enabled',  'value' => '1', 'group' => 'payment'],
             ['key' => 'payment_cod_enabled',     'value' => '1', 'group' => 'payment'],
             ['key' => 'stripe_public_key',       'value' => '',  'group' => 'payment'],
             ['key' => 'stripe_secret_key',       'value' => '',  'group' => 'payment'],

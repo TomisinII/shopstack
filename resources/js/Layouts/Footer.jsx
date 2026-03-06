@@ -76,7 +76,7 @@ export default function Footer() {
             links: [
                 ...(isLoggedIn ? [{ label: 'My Account', href: dashboardRoute }] : []),
 
-                ...(isCustomer ? [
+                ...((isCustomer || !auth?.user) ? [
                     { label: 'Order History', href: route('account.orders.index') },
                     { label: 'Wishlist',      href: route('wishlist.index')        },
                 ] : []),
@@ -104,34 +104,6 @@ export default function Footer() {
 
     return (
         <footer className="bg-gray-950 text-gray-400">
-
-            {/* Newsletter banner */}
-            <div className="border-b border-gray-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                        <div>
-                            <h3 className="text-white font-semibold text-lg">Get 10% off your first order</h3>
-                            <p className="text-sm text-gray-400 mt-1">Subscribe for exclusive deals, new arrivals, and style tips.</p>
-                        </div>
-                        <form
-                            onSubmit={(e) => e.preventDefault()}
-                            className="flex items-center gap-2 w-full sm:w-auto"
-                        >
-                            <input
-                                type="email"
-                                placeholder="Enter your email"
-                                className="flex-1 sm:w-64 px-4 py-2.5 text-sm bg-gray-900 border border-gray-700 text-white placeholder:text-gray-500 rounded-xl outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
-                            />
-                            <button
-                                type="submit"
-                                className="px-5 py-2.5 text-sm font-semibold text-white bg-primary-600 rounded-xl hover:bg-primary-500 transition-colors flex-shrink-0"
-                            >
-                                Subscribe
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
 
             {/* Main footer grid */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">

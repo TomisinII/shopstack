@@ -1,13 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { StarRating, ProductCard, CountdownTimer } from '@/Components';
 
-// ─── Formatters ──────────────────────────────────────────────────────────────
 
 const formatCurrency = (amount) =>
     new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(amount);
-
-// ─── Section Header ───────────────────────────────────────────────────────────
 
 function SectionHeader({ title, subtitle, viewAllHref }) {
     return (
@@ -31,7 +28,75 @@ function SectionHeader({ title, subtitle, viewAllHref }) {
     );
 }
 
-// ─── Home Page ────────────────────────────────────────────────────────────────
+// Place above the Home export
+function NewsletterForm() {
+    const { flash } = usePage().props;
+    const { data, setData, post, processing, errors } = useForm({ email: '' });
+
+    const submit = (e) => {
+        e.preventDefault();
+        post(route('newsletter.subscribe'), {
+            onSuccess: () => setData('email', ''),
+        });
+    };
+
+    if (flash?.newsletter_success) {
+        return (
+            <div className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                </div>
+                <p className="text-white font-semibold text-base">You're subscribed!</p>
+                <p className="text-primary-100 text-sm">
+                    Check your inbox — your discount code is on its way.
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col items-center gap-3">
+            <form onSubmit={submit} className="flex items-center gap-2 max-w-sm w-full mx-auto">
+                <input
+                    type="email"
+                    value={data.email}
+                    onChange={(e) => setData('email', e.target.value)}
+                    placeholder="Enter your email"
+                    className="flex-1 px-5 py-3 text-sm bg-white/20 border border-white/30 text-white placeholder:text-primary-200 rounded-xl outline-none focus:bg-white/30 transition-all"
+                    required
+                />
+                <button
+                    type="submit"
+                    disabled={processing}
+                    className="px-5 py-3 bg-white text-primary-700 text-sm font-bold rounded-xl hover:bg-primary-50 transition-colors flex-shrink-0 flex items-center gap-1.5 disabled:opacity-60"
+                >
+                    {processing ? (
+                        <>
+                            <svg className="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            Subscribing...
+                        </>
+                    ) : (
+                        <>
+                            Subscribe
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </>
+                    )}
+                </button>
+            </form>
+            {errors.email && (
+                <p className="text-red-200 text-xs">{errors.email}</p>
+            )}
+            <p className="text-primary-200 text-xs">No spam, unsubscribe anytime.</p>
+        </div>
+    );
+}
 
 export default function Home({ newArrivals, bestSellers, categories, deal, brands, testimonials }) {
     return (
@@ -367,26 +432,7 @@ export default function Home({ newArrivals, bestSellers, categories, deal, brand
                             <p className="text-primary-100 text-sm mb-8 max-w-md mx-auto">
                                 Subscribe for exclusive deals, new arrivals, and style inspiration.
                             </p>
-                            <form
-                                onSubmit={(e) => e.preventDefault()}
-                                className="flex items-center gap-2 max-w-sm mx-auto"
-                            >
-                                <input
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    className="flex-1 px-5 py-3 text-sm bg-white/20 border border-white/30 text-white placeholder:text-primary-200 rounded-xl outline-none focus:bg-white/30 transition-all"
-                                />
-                                <button
-                                    type="submit"
-                                    className="px-5 py-3 bg-white text-primary-700 text-sm font-bold rounded-xl hover:bg-primary-50 transition-colors flex-shrink-0 flex items-center gap-1.5"
-                                >
-                                    Subscribe
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </form>
-                            <p className="text-primary-200 text-xs mt-3">No spam, unsubscribe anytime.</p>
+                            <NewsletterForm />
                         </div>
                     </div>
                 </div>

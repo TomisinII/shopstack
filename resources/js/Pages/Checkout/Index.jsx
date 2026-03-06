@@ -6,14 +6,12 @@ import AppLayout from '@/Layouts/AppLayout';
 const formatCurrency = (amount) =>
     new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(amount);
 
-// ─── Shipping method definitions (shared) ────────────────────────────────────
 const SHIPPING_METHODS = [
     { id: 'standard', label: 'Standard Shipping', subtitle: '3-5 business days', price: null,  display: 'Free' },
     { id: 'express',  label: 'Express Shipping',  subtitle: '1-2 business days', price: 5000,  display: null  },
     { id: 'same_day', label: 'Same-Day Delivery', subtitle: 'Order before 12pm', price: 10000, display: null  },
 ];
 
-// ─── Step Indicator ───────────────────────────────────────────────────────────
 function StepIndicator({ step }) {
     const steps = ['Shipping', 'Payment', 'Confirmation'];
     return (
@@ -48,7 +46,6 @@ function StepIndicator({ step }) {
     );
 }
 
-// ─── Order Summary Sidebar ────────────────────────────────────────────────────
 function OrderSummary({ cart, shippingCost }) {
     const shipping = shippingCost ?? cart.shipping;
     const total    = cart.subtotal + shipping + cart.tax - cart.discount;
@@ -98,6 +95,7 @@ function OrderSummary({ cart, shippingCost }) {
         </div>
     );
 }
+
 // ─── Step 1: Shipping ─────────────────────────────────────────────────────────
 function ShippingStep({ data, setData, errors, savedAddresses, onContinue }) {
     const set = (path, value) => {
@@ -113,8 +111,8 @@ function ShippingStep({ data, setData, errors, savedAddresses, onContinue }) {
         ...p,
         shipping: {
             full_name:     addr.full_name     ?? '',
-            address_line1: addr.address_line1 ?? '',
-            address_line2: addr.address_line2 ?? '',
+            address_line_1: addr.address_line_1 ?? '',
+            address_line_2: addr.address_line_2 ?? '',
             city:          addr.city          ?? '',
             state:         addr.state         ?? '',
             zip_code:      addr.zip_code      ?? '',
@@ -139,7 +137,7 @@ function ShippingStep({ data, setData, errors, savedAddresses, onContinue }) {
                                 className="text-left p-3.5 border-2 border-gray-200 rounded-xl hover:border-primary-400 transition-colors">
                                 <p className="text-xs font-bold text-gray-400 uppercase mb-1">{addr.label ?? 'Address'}</p>
                                 <p className="text-sm font-medium text-gray-900">{addr.full_name}</p>
-                                <p className="text-xs text-gray-500 mt-0.5">{addr.address_line1}, {addr.city}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">{addr.address_line_1}, {addr.city}</p>
                             </button>
                         ))}
                     </div>
@@ -151,10 +149,10 @@ function ShippingStep({ data, setData, errors, savedAddresses, onContinue }) {
                 <div className="space-y-3">
                     <TextInput placeholder="Full name" value={data.shipping.full_name}
                         onChange={e => set('shipping.full_name', e.target.value)} error={errors['shipping.full_name']} />
-                    <TextInput placeholder="Address line 1" value={data.shipping.address_line1}
-                        onChange={e => set('shipping.address_line1', e.target.value)} error={errors['shipping.address_line1']} />
-                    <TextInput placeholder="Address line 2 (optional)" value={data.shipping.address_line2}
-                        onChange={e => set('shipping.address_line2', e.target.value)} />
+                    <TextInput placeholder="Address line 1" value={data.shipping.address_line_1}
+                        onChange={e => set('shipping.address_line_1', e.target.value)} error={errors['shipping.address_line_1']} />
+                    <TextInput placeholder="Address line 2 (optional)" value={data.shipping.address_line_2}
+                        onChange={e => set('shipping.address_line_2', e.target.value)} />
                     <div className="grid grid-cols-3 gap-3">
                         <TextInput placeholder="City"     value={data.shipping.city}     onChange={e => set('shipping.city', e.target.value)}     error={errors['shipping.city']} />
                         <TextInput placeholder="State"    value={data.shipping.state}    onChange={e => set('shipping.state', e.target.value)}    error={errors['shipping.state']} />
@@ -482,8 +480,8 @@ export default function Index({ cart, savedAddresses, userEmail, gateways, strip
         email:           userEmail ?? '',
         shipping: {
             full_name:     '',
-            address_line1: '',
-            address_line2: '',
+            address_line_1: '',
+            address_line_2: '',
             city:          '',
             state:         '',
             zip_code:      '',
@@ -524,7 +522,7 @@ export default function Index({ cart, savedAddresses, userEmail, gateways, strip
         const e = {};
         if (!data.email)                  e.email = 'Email is required';
         if (!data.shipping.full_name)     e['shipping.full_name'] = 'Full name is required';
-        if (!data.shipping.address_line1) e['shipping.address_line1'] = 'Address is required';
+        if (!data.shipping.address_line_1) e['shipping.address_line_1'] = 'Address is required';
         if (!data.shipping.city)          e['shipping.city'] = 'City is required';
         if (!data.shipping.state)         e['shipping.state'] = 'State is required';
         if (!data.shipping.zip_code)      e['shipping.zip_code'] = 'ZIP code is required';

@@ -354,7 +354,7 @@ function UserDropdown({ auth }) {
                             Dashboard
                         </Link>
                         {
-                            isCustomer && (
+                            (isCustomer || !auth?.user) && (
                                 <Link href={route('account.orders.index')} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setOpen(false)}>
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -454,7 +454,7 @@ function MobileMenu({ open, onClose, onCartOpen, auth, cartCount, wishlistCount 
                                     Dashboard
                                 </Link>
                                 {
-                                    isCustomer && (
+                                    (isCustomer || !auth?.user) && (
                                         <>
                                             <Link href={route('account.orders.index')} onClick={onClose} className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -490,7 +490,7 @@ function MobileMenu({ open, onClose, onCartOpen, auth, cartCount, wishlistCount 
                 </nav>
 
                 {
-                    isCustomer && (
+                    (isCustomer || !auth?.user) && (
                         <>
                             {/* Cart CTA */}
                             <div className="p-4 border-t border-gray-100">
@@ -643,7 +643,7 @@ export default function Navbar() {
 
 
                             {
-                                isCustomer && (
+                                (isCustomer || !auth?.user) && (
                                     <>
                                         {/* Wishlist */}
                                         <Link
@@ -664,7 +664,7 @@ export default function Navbar() {
 
 
                             {
-                                isCustomer && (
+                                (isCustomer || !auth?.user) && (
                                     <>
                                         {/* Cart */}
                                         <button
@@ -697,7 +697,7 @@ export default function Navbar() {
             {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
 
             {
-                isCustomer && (
+                (isCustomer || !auth?.user) && (
                     <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
                 )
             }

@@ -52,6 +52,7 @@ export default function ProductCard({ product, showCartButton = false, className
     };
 
     const outOfStock = product.stock_status === 'out_of_stock';
+    const isCustomerOrGuest = !auth?.user || auth?.roles?.includes('Customer');
 
     return (
         <div className={`group flex flex-col ${className}`}>
@@ -91,7 +92,7 @@ export default function ProductCard({ product, showCartButton = false, className
                     <button
                         onClick={toggleWishlist}
                         className={`absolute top-3 right-3 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center transition-all hover:scale-110 ${
-                            wishlisted ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                            wishlisted && isCustomerOrGuest ? 'opacity-100' : isCustomerOrGuest ? 'opacity-0 group-hover:opacity-100' : 'hidden'
                         }`}
                         aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                     >
@@ -107,7 +108,7 @@ export default function ProductCard({ product, showCartButton = false, className
                     </button>
 
                     {/* Hover Add to Cart overlay — hidden when showCartButton is true */}
-                    {!showCartButton && (
+                    {!showCartButton && isCustomerOrGuest && (
                         <div className="absolute bottom-0 inset-x-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                             <button
                                 onClick={addToCart}

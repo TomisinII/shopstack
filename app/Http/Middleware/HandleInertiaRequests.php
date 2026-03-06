@@ -30,6 +30,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 'roles' => $request->user()?->getRoleNames() ?? [],
+                'wishlist_ids' => $request->user()
+                    ? $request->user()->wishlists()->pluck('product_id')->toArray()
+                    : [],
             ],
             'cart' => function () use ($request) {
                 $sessionId = $request->session()->get('cart_session_id');
@@ -82,14 +85,11 @@ class HandleInertiaRequests extends Middleware
             'wishlist' => fn () => auth()->check()
                 ? ['count' => \App\Models\Wishlist::where('user_id', auth()->id())->count()]
                 : ['count' => 0],
-
-            'wishlist_ids' => $request->user()
-                ? $request->user()->wishlists()->pluck('product_id')->toArray()
-                : [],
-                
+ 
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error'   => $request->session()->get('error'),
+                'newsletter_success' => $request->session()->get('newsletter_success'),
             ],
         ];
     }

@@ -200,7 +200,7 @@ export default function Index({ tab: initialTab, settings: initialSettings }) {
                         <SectionCard title="Payment Methods">
                             {[
                                 { key: 'payment_stripe_enabled',  label: 'Stripe',          desc: 'Credit/Debit cards'  },
-                                { key: 'payment_paypal_enabled',  label: 'PayPal',           desc: 'PayPal checkout'     },
+                                { key: 'payment_paystack_enabled',  label: 'Paystack',           desc: 'Paystack checkout'     },
                                 { key: 'payment_cod_enabled',     label: 'Cash on Delivery', desc: 'Pay on delivery'     },
                             ].map(({ key, label, desc }, i) => (
                                 <div key={key} className={`flex items-center justify-between py-4 ${i > 0 ? 'border-t border-gray-100' : ''}`}>
@@ -223,9 +223,10 @@ export default function Index({ tab: initialTab, settings: initialSettings }) {
                                     <InputLabel htmlFor="stripe_public_key">Publishable Key</InputLabel>
                                     <TextInput
                                         id="stripe_public_key"
-                                        value={data.stripe_public_key}
+                                        value={data.stripe_public_key ?? ''}
                                         onChange={(e) => set('stripe_public_key', e.target.value)}
                                         placeholder="pk_live_..."
+                                        autoComplete="off"
                                     />
                                 </div>
                                 <div>
@@ -233,23 +234,25 @@ export default function Index({ tab: initialTab, settings: initialSettings }) {
                                     <TextInput
                                         id="stripe_secret_key"
                                         type="password"
-                                        value={data.stripe_secret_key}
+                                        value={data.stripe_secret_key ?? ''}
                                         onChange={(e) => set('stripe_secret_key', e.target.value)}
                                         placeholder="sk_live_..."
+                                        autoComplete='new-password'
                                     />
                                 </div>
                             </SectionCard>
                         )}
 
-                        {data.payment_paypal_enabled && (
+                        {data.payment_paystack_enabled && (
                             <SectionCard title="Paystack Keys" description="Your Paystack API credentials">
                                 <div>
                                     <InputLabel htmlFor="paystack_public_key">Public Key</InputLabel>
                                     <TextInput
                                         id="paystack_public_key"
-                                        value={data.paystack_public_key}
+                                        value={data.paystack_public_key ?? ''}
                                         onChange={(e) => set('paystack_public_key', e.target.value)}
                                         placeholder="pk_live_..."
+                                        autoComplete="off"
                                     />
                                 </div>
                                 <div>
@@ -257,9 +260,10 @@ export default function Index({ tab: initialTab, settings: initialSettings }) {
                                     <TextInput
                                         id="paystack_secret_key"
                                         type="password"
-                                        value={data.paystack_secret_key}
+                                        value={data.paystack_secret_key ?? ''}
                                         onChange={(e) => set('paystack_secret_key', e.target.value)}
                                         placeholder="sk_live_..."
+                                        autoComplete="new-password"
                                     />
                                 </div>
                             </SectionCard>
@@ -507,9 +511,10 @@ export default function Index({ tab: initialTab, settings: initialSettings }) {
                                             <TextInput
                                                 id="mail_password"
                                                 type="password"
-                                                value={data.mail_password}
+                                                value={data.mail_password ?? ''}
                                                 onChange={(e) => set('mail_password', e.target.value)}
                                                 placeholder="••••••••"
+                                                autoComplete="new-password"
                                             />
                                         </div>
                                     </div>
