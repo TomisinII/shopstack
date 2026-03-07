@@ -291,9 +291,6 @@ class Product extends Model
         $this->increment('views_count');
     }
 
-    /**
-     * Get primary image URL
-     */
     public function getPrimaryImageUrl(): ?string
     {
         $images = $this->relationLoaded('images')
@@ -302,14 +299,26 @@ class Product extends Model
 
         $image = $images->firstWhere('is_primary', true) ?? $images->first();
 
-        if (!$image || !$image->url) {
+        if (!$image?->image_path) {
             return null;
         }
 
-        if (str_starts_with($image->url, 'http')) {
-            return $image->url;
+        return self::resolveImageUrl($image->image_path);
+    }
+
+    public static function resolveImageUrl(string $path): string
+    {
+        // Already a full URL
+        if (str_starts_with($path, 'http')) {
+            return $path;
         }
 
-        return Storage::url($image->url);
+        // Already has /storage/ prefix (bad data from old uploads)
+        if (str_starts_with($path, '/storage/')) {
+            return $path;
+        }
+
+        // Raw relative path — generate proper URL
+        return Storage::url($path);
     }
 }

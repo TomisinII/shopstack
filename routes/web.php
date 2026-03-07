@@ -44,7 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/confirmation', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
     Route::post('/checkout/stripe-intent', [CheckoutController::class, 'createStripeIntent'])->name('checkout.stripe-intent');
-    Route::post('/checkout/paystack', [CheckoutController::class, 'storePaystack'])->name('checkout.paystack')->middleware('auth');
+    Route::post('/checkout/paystack', [CheckoutController::class, 'storePaystack'])->name('checkout.paystack');
 });
 
 

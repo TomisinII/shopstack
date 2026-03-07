@@ -33,6 +33,8 @@ export default function Show({ product }) {
         });
     };
 
+    console.log(product.images)
+
     const discountPct = product.sale_price
         ? Math.round(((product.price - product.sale_price) / product.price) * 100)
         : 0;

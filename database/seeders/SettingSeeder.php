@@ -67,7 +67,7 @@ class SettingSeeder extends Seeder
 
             
             ['key' => 'maintenance_mode',    'value' => '0',  'group' => 'advanced'],
-            ['key' => 'guest_checkout',      'value' => '1',  'group' => 'advanced'],
+            ['key' => 'guest_checkout',      'value' => '0',  'group' => 'advanced'],
             ['key' => 'user_registration',   'value' => '1',  'group' => 'advanced'],
             ['key' => 'google_analytics_id', 'value' => '',   'group' => 'advanced'],
             ['key' => 'facebook_pixel_id',   'value' => '',   'group' => 'advanced'],

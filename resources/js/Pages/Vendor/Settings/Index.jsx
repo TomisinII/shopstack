@@ -186,10 +186,11 @@ export default function Index({ profile, user }) {
                                     <TextInput
                                         id="bank_name"
                                         type="text"
-                                        value={data.bank_name}
+                                        value={data.bank_name ?? ''}
                                         onChange={(e) => setData('bank_name', e.target.value)}
                                         placeholder="e.g. Chase Bank"
                                         error={errors.bank_name}
+                                        autoComplete="off"
                                     />
                                 </div>
 
@@ -199,11 +200,11 @@ export default function Index({ profile, user }) {
                                         <TextInput
                                             id="account_number"
                                             type="password"
-                                            value={data.account_number}
+                                            value={data.account_number ?? ''}
                                             onChange={(e) => setData('account_number', e.target.value)}
                                             placeholder="Enter to update"
-                                            autoComplete="off"
                                             error={errors.account_number}
+                                            autoComplete="new-password"
                                         />
                                     </div>
                                     <div>
@@ -211,10 +212,10 @@ export default function Index({ profile, user }) {
                                         <TextInput
                                             id="routing_number"
                                             type="password"
-                                            value={data.routing_number}
+                                            value={data.routing_number ?? ''}
                                             onChange={(e) => setData('routing_number', e.target.value)}
                                             placeholder="Enter to update"
-                                            autoComplete="off"
+                                            autoComplete="new-password"
                                             error={errors.routing_number}
                                         />
                                     </div>

@@ -53,10 +53,10 @@ class HandleInertiaRequests extends Middleware
 
                     $imageUrl = null;
                     $primaryImage = $product?->images->firstWhere('is_primary', true) ?? $product?->images->first();
-                    if ($primaryImage?->url) {
-                        $imageUrl = str_starts_with($primaryImage->url, 'http')
-                            ? $primaryImage->url
-                            : \Storage::url($primaryImage->url);
+                    if ($primaryImage?->image_path) {
+                        $imageUrl = str_starts_with($primaryImage->image_path, 'http')
+                            ? $primaryImage->image_path
+                            : \Storage::url($primaryImage->image_path);
                     }
 
                     return [

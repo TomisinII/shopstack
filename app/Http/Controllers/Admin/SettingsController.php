@@ -41,6 +41,9 @@ class SettingsController extends Controller
             default    => null,
         };
 
+        // Clear maintenance mode cache whenever settings are saved
+        \Illuminate\Support\Facades\Cache::forget('maintenance_mode');
+
         return redirect()->route('admin.settings.index', ['tab' => $tab])
                          ->with('success', ucfirst($tab) . ' settings saved successfully.');
     }
@@ -199,7 +202,7 @@ class SettingsController extends Controller
             'currency'      => $get('currency',      'NGN'),
             'timezone'      => $get('timezone',      config('app.timezone', 'UTC')),
 
-            // Payment — falls back to .env via config('services.*')
+            // Payment
             'payment_stripe_enabled'  => $get('payment_stripe_enabled',  '0') === '1',
             'payment_paystack_enabled'=> $get('payment_paystack_enabled', '0') === '1',
             'payment_cod_enabled'     => $get('payment_cod_enabled',      '0') === '1',
@@ -217,7 +220,7 @@ class SettingsController extends Controller
             'tax_based_on'       => $get('tax_based_on',        'shipping_address'),
             'tax_rate'           => $get('tax_rate',            '0'),
 
-            // Email — falls back to .env via config('mail.*')
+            // Email
             'mail_driver'          => $get('mail_driver',       config('mail.default',                  'smtp')),
             'mail_host'            => $get('mail_host',         config('mail.mailers.smtp.host',         '')),
             'mail_port'            => $get('mail_port',         config('mail.mailers.smtp.port',         '587')),

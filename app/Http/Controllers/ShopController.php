@@ -192,8 +192,8 @@ class ShopController extends Controller
                 ] : null,
                 'images'           => $product->images->map(fn ($img) => [
                     'id'         => $img->id,
-                    'url'        => str_starts_with($img->url, 'http') ? $img->url : \Storage::url($img->url),
-                    'alt'        => $img->alt ?? $product->name,
+                    'url' => Product::resolveImageUrl($img->image_path),
+                    'alt'        => $img->alt_text ?? $product->name,
                     'is_primary' => $img->is_primary,
                 ]),
                 'variants'         => $product->variants->map(fn ($v) => [
@@ -230,10 +230,8 @@ class ShopController extends Controller
 
         $primaryImage = $p->images->firstWhere('is_primary', true) ?? $p->images->first();
         $imageUrl = null;
-        if ($primaryImage?->url) {
-            $imageUrl = str_starts_with($primaryImage->url, 'http')
-                ? $primaryImage->url
-                : \Storage::url($primaryImage->url);
+        if ($primaryImage?->image_path) {                                  
+            $imageUrl = Product::resolveImageUrl($primaryImage->image_path);
         }
 
         return [
